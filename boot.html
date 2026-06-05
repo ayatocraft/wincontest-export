@@ -14,14 +14,14 @@ align-items:center;
 justify-content:center;
 height:100vh;
 }
-.box{text-align:center;width:320px;}
+.box{text-align:center}
 .bar{
-width:100%;
+width:280px;
 height:6px;
 background:#333;
-margin-top:20px;
 border-radius:3px;
 overflow:hidden;
+margin-top:16px;
 }
 .progress{
 width:0%;
@@ -36,13 +36,13 @@ animation:load 2s forwards;
 
 <div class="box">
 <h2>Wincon Boot</h2>
-<p>Loading system...</p>
+<p>Loading...</p>
 
 <div class="bar"><div class="progress"></div></div>
 
 <script>
 setTimeout(()=>{
-location.href="wincon.html";
+location.href="index.html";
 },2000);
 </script>
 

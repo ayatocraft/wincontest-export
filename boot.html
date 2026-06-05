@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Wincon Boot</title>
+<style>
+body {
+  margin:0;
+  background:#0d0d0d;
+  color:#fff;
+  font-family:sans-serif;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
+}
+.box { text-align:center; width:320px; }
+.bar {
+  width:100%;
+  height:6px;
+  background:#333;
+  margin-top:20px;
+  overflow:hidden;
+  border-radius:3px;
+}
+.progress {
+  width:0%;
+  height:100%;
+  background:#4caf50;
+  animation: load 2s forwards;
+}
+@keyframes load { to { width:100%; } }
+</style>
+</head>
+<body>
+<div class="box">
+  <h2>Wincon Starting</h2>
+  <p>Checking system...</p>
+
+  <div class="bar"><div class="progress"></div></div>
+
+  <script>
+    setTimeout(() => {
+      location.href = "wincon.html";
+    }, 2000);
+  </script>
+</div>
+</body>
+</html>

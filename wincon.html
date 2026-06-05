@@ -1,0 +1,2347 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Wincon Enterprise</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:"Segoe UI",sans-serif;
+}
+
+body{
+overflow:hidden;
+background:#1e1f22;
+color:white;
+width:100vw;
+height:100vh;
+}
+
+#desktop{
+position:fixed;
+inset:0;
+background:linear-gradient(135deg,#1f232a,#17191f);
+overflow:hidden;
+}
+
+.window{
+position:absolute;
+background:#2b313b;
+border-radius:14px;
+border:1px solid rgba(255,255,255,.08);
+box-shadow:0 25px 80px rgba(0,0,0,.45);
+display:flex;
+flex-direction:column;
+overflow:hidden;
+min-width:320px;
+min-height:180px;
+animation:openAnim .14s ease;
+}
+
+@keyframes openAnim{
+from{
+opacity:0;
+transform:scale(.96);
+}
+to{
+opacity:1;
+transform:scale(1);
+}
+}
+
+.window.maximized{
+left:0 !important;
+top:0 !important;
+width:100vw !important;
+height:calc(100vh - 52px) !important;
+border-radius:0;
+}
+
+.titlebar{
+height:42px;
+background:#39414d;
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:0 10px;
+cursor:move;
+flex-shrink:0;
+}
+
+.title-left{
+display:flex;
+align-items:center;
+gap:10px;
+}
+
+.window-controls{
+display:flex;
+gap:6px;
+}
+
+.win-btn{
+width:32px;
+height:32px;
+border:none;
+border-radius:8px;
+background:#4d5767;
+color:white;
+cursor:pointer;
+}
+
+.win-btn:hover{
+background:#64748b;
+}
+
+.content{
+flex:1;
+overflow:auto;
+padding:14px;
+background:#20242b;
+}
+
+#taskbar{
+position:fixed;
+left:0;
+right:0;
+bottom:0;
+height:52px;
+background:rgba(20,20,20,.92);
+backdrop-filter:blur(12px);
+display:flex;
+align-items:center;
+gap:10px;
+padding:0 10px;
+z-index:999999;
+}
+
+#menuBtn{
+height:40px;
+padding:0 16px;
+border:none;
+border-radius:10px;
+background:#2563eb;
+color:white;
+cursor:pointer;
+}
+
+#taskIcons{
+display:flex;
+gap:8px;
+}
+
+.task-icon{
+width:40px;
+height:40px;
+border-radius:10px;
+background:#3d4654;
+display:flex;
+align-items:center;
+justify-content:center;
+cursor:pointer;
+}
+
+.task-icon.minimized{
+opacity:.45;
+}
+
+#menu{
+position:fixed;
+left:10px;
+bottom:62px;
+width:340px;
+height:520px;
+background:#2d333c;
+border-radius:16px;
+display:none;
+flex-direction:column;
+padding:12px;
+overflow:auto;
+z-index:99999999;
+}
+
+.menu-item{
+width:100%;
+min-height:48px;
+border:none;
+border-radius:10px;
+background:#404a58;
+color:white;
+text-align:left;
+padding:0 12px;
+margin-bottom:8px;
+cursor:pointer;
+}
+
+.menu-item:hover{
+background:#556173;
+}
+
+#contextMenu{
+position:fixed;
+width:240px;
+background:#2c313b;
+border-radius:12px;
+overflow:hidden;
+display:none;
+z-index:999999999;
+}
+
+.context-item{
+height:42px;
+display:flex;
+align-items:center;
+padding:0 12px;
+cursor:pointer;
+}
+
+.context-item:hover{
+background:#4c5769;
+}
+
+.action{
+width:100%;
+height:42px;
+border:none;
+border-radius:10px;
+background:#2563eb;
+color:white;
+cursor:pointer;
+}
+
+.setting-group{
+background:#343b46;
+padding:12px;
+border-radius:12px;
+margin-bottom:12px;
+}
+
+input,
+select,
+textarea{
+width:100%;
+height:42px;
+border:none;
+border-radius:10px;
+background:#4d5767;
+color:white;
+padding:0 10px;
+margin-top:8px;
+}
+
+textarea{
+height:260px;
+resize:none;
+padding:10px;
+}
+
+iframe{
+width:100%;
+height:100%;
+border:none;
+background:white;
+}
+
+.resize-handle{
+position:absolute;
+right:0;
+bottom:0;
+width:18px;
+height:18px;
+cursor:nwse-resize;
+}
+
+.spinner{
+width:64px;
+height:64px;
+border:5px solid rgba(255,255,255,.2);
+border-top:5px solid white;
+border-radius:50%;
+animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+from{transform:rotate(0deg)}
+to{transform:rotate(360deg)}
+}
+
+#bootScreen{
+position:fixed;
+inset:0;
+background:#111;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+gap:18px;
+z-index:999999999;
+}
+
+.badge{
+display:inline-block;
+padding:4px 8px;
+border-radius:999px;
+background:#475569;
+font-size:12px;
+margin-top:8px;
+}
+
+</style>
+</head>
+<body>
+
+<div id="bootScreen">
+<div class="spinner"></div>
+<h1>Wincon</h1>
+</div>
+
+<div id="desktop"></div>
+
+<div id="menu"></div>
+
+<div id="contextMenu"></div>
+
+<div id="taskbar">
+<button id="menuBtn">Menu</button>
+<div id="taskIcons"></div>
+</div>
+
+<script>
+const ENTERPRISE_STORAGE_KEY="winconEnterpriseApps";
+
+function loadEnterpriseApps(){
+
+try{
+
+const data=JSON.parse(
+localStorage.getItem(
+ENTERPRISE_STORAGE_KEY
+)||"[]"
+);
+
+if(Array.isArray(data)){
+window.__WINCON_ENTERPRISE_APPS__=data;
+}
+
+}catch(e){
+
+window.__WINCON_ENTERPRISE_APPS__=[];
+
+}
+
+}
+
+function saveEnterpriseApps(){
+
+localStorage.setItem(
+ENTERPRISE_STORAGE_KEY,
+JSON.stringify(
+window.__WINCON_ENTERPRISE_APPS__
+)
+);
+
+}
+
+const desktop=document.getElementById("desktop");
+const menu=document.getElementById("menu");
+const contextMenu=document.getElementById("contextMenu");
+const taskIcons=document.getElementById("taskIcons");
+
+let zIndexCounter=100;
+
+window.__WINCON_ENTERPRISE_APPS__=
+window.__WINCON_ENTERPRISE_APPS__||[];
+loadEnterpriseApps();
+let menuItems=JSON.parse(
+localStorage.getItem("winconMenuItems")||"null"
+)||[
+{
+title:"テストウィンドウ",
+icon:"🪟",
+type:"window"
+},
+{
+title:"テストポップアップ",
+icon:"⚠️",
+type:"popup"
+},
+{
+title:"ファイル",
+icon:"📁",
+type:"file",
+system:true
+},
+{
+title:"タスクマネージャ",
+icon:"📊",
+type:"task",
+system:true
+},
+{
+title:"システム設定",
+icon:"⚙️",
+type:"settings",
+system:true
+},
+{
+title:"リカバリ",
+icon:"🛠️",
+type:"recovery",
+system:true,
+hidden:true
+},
+{
+title:"電源を切る",
+icon:"⏻",
+type:"shutdown",
+system:true
+},
+{
+title:"お引越し",
+icon:"📦",
+type:"transfer",
+system:true
+},
+
+{
+  title:"ターミナル",
+  icon:"⌨️",
+  type:"terminal",
+  system:true
+},
+,{
+  title:"Wincon Core Service",
+  icon:"⚙️",
+  type:"coreservice",
+  system:true,
+  hidden:true
+}
+];
+
+function mergeEnterpriseApps(){
+
+if(
+!Array.isArray(
+window.__WINCON_ENTERPRISE_APPS__
+)
+){
+window.__WINCON_ENTERPRISE_APPS__=[];
+}
+
+menuItems=
+menuItems.filter(
+m=>!m.enterprise
+);
+
+window.__WINCON_ENTERPRISE_APPS__
+.forEach(app=>{
+
+menuItems.unshift({
+...app,
+enterprise:true
+});
+
+});
+
+}
+
+function boot(){
+
+mergeEnterpriseApps();
+
+renderMenu();
+
+restoreState();
+
+setupSecurityShortcut();
+
+startTutorial();
+
+}
+
+setTimeout(()=>{
+
+const bootScreen=document.getElementById("bootScreen");
+
+if(bootScreen){
+bootScreen.remove();
+}
+
+boot();
+
+},1200);
+
+function setupSecurityShortcut(){
+
+window.addEventListener("keydown",e=>{
+
+if(e.ctrlKey&&e.shiftKey){
+openSecurityOptions();
+}
+
+if(e.key==="Escape"){
+openSystemSettings(true);
+}
+
+});
+
+}
+function fullFactoryReset(){
+
+if(
+!confirm(
+"完全初期化しますか？企業アプリも削除されます。"
+)
+){
+return;
+}
+
+localStorage.clear();
+
+location.reload();
+
+}
+let hiddenCommand="";
+
+window.addEventListener(
+"keydown",
+e=>{
+
+hiddenCommand+=e.key;
+
+hiddenCommand=
+hiddenCommand.slice(-20);
+
+if(
+hiddenCommand
+.toLowerCase()
+.includes("fullreset")
+){
+
+fullFactoryReset();
+
+}
+
+}
+);
+document.getElementById("menuBtn").onclick=()=>{
+
+menu.style.display=
+menu.style.display==="flex"
+?"none"
+:"flex";
+
+};
+
+function renderMenu(){
+
+menu.innerHTML="";
+
+menuItems.forEach(item=>{
+
+if(item.hidden)return;
+
+const btn=document.createElement("button");
+
+btn.className="menu-item";
+
+btn.innerHTML=
+`${item.icon} ${item.title}`;
+
+btn.onclick=()=>{
+
+menu.style.display="none";
+
+switch(item.type){
+
+case "window":
+openTestWindow();
+break;
+
+case "popup":
+openTestPopup();
+break;
+
+case "file":
+openFileManager();
+break;
+
+case "task":
+openTaskManager();
+break;
+
+case "settings":
+openSystemSettings(false);
+break;
+
+case "recovery":
+openRecovery();
+break;
+
+case "shutdown":
+shutdownSystem();
+break;
+
+case "externalHTML":
+openExternalHTML(item);
+break;
+
+case "transfer":
+openTransferApp();
+break;
+
+case "terminal":
+openTerminal();
+break;
+}
+
+};
+
+menu.appendChild(btn);
+
+});
+
+}
+
+function createWindow(options){
+
+const {
+title="Window",
+icon="🪟",
+content="",
+width=700,
+height=450,
+popup=false,
+safe=false
+}=options;
+
+const win=document.createElement("div");
+
+win.className="window";
+
+win.style.width=(popup?420:width)+"px";
+win.style.height=(popup?240:height)+"px";
+
+win.style.left=
+Math.random()*240+80+"px";
+
+win.style.top=
+Math.random()*120+60+"px";
+
+win.style.zIndex=++zIndexCounter;
+
+win.dataset.title=title;
+
+win.innerHTML=`
+
+<div class="titlebar">
+
+<div class="title-left">
+<div>${icon}</div>
+<div>${title}</div>
+</div>
+
+<div class="window-controls">
+
+${popup?"":`
+<button class="win-btn min-btn">
+<i class="fa-solid fa-minus"></i>
+</button>
+`}
+
+${popup||safe?"":`
+<button class="win-btn max-btn">
+<i class="fa-regular fa-square"></i>
+</button>
+`}
+
+${safe?"":`
+<button class="win-btn close-btn">
+<i class="fa-solid fa-xmark"></i>
+</button>
+`}
+
+</div>
+
+</div>
+
+<div class="content">
+${content}
+</div>
+
+${popup?"":"<div class='resize-handle'></div>"}
+
+`;
+
+desktop.appendChild(win);
+
+const task=document.createElement("div");
+
+task.className="task-icon";
+task.innerHTML=icon;
+task.title=title;
+
+taskIcons.appendChild(task);
+
+task.onclick=()=>{
+
+win.style.display="flex";
+
+task.classList.remove("minimized");
+
+win.style.zIndex=++zIndexCounter;
+
+};
+
+const titlebar=win.querySelector(".titlebar");
+
+let dragging=false;
+let offsetX=0;
+let offsetY=0;
+
+titlebar.addEventListener("mousedown",e=>{
+
+dragging=true;
+
+offsetX=e.clientX-win.offsetLeft;
+offsetY=e.clientY-win.offsetTop;
+
+win.style.zIndex=++zIndexCounter;
+
+});
+
+window.addEventListener("mousemove",e=>{
+
+if(!dragging)return;
+
+if(win.classList.contains("maximized"))
+return;
+
+win.style.left=
+e.clientX-offsetX+"px";
+
+win.style.top=
+e.clientY-offsetY+"px";
+
+});
+
+window.addEventListener("mouseup",()=>{
+dragging=false;
+});
+
+const resize=win.querySelector(".resize-handle");
+
+if(resize){
+
+let resizing=false;
+let startX,startY,startW,startH;
+
+resize.addEventListener("mousedown",e=>{
+
+resizing=true;
+
+startX=e.clientX;
+startY=e.clientY;
+
+startW=win.offsetWidth;
+startH=win.offsetHeight;
+
+e.preventDefault();
+
+});
+
+window.addEventListener("mousemove",e=>{
+
+if(!resizing)return;
+
+win.style.width=
+startW+(e.clientX-startX)+"px";
+
+win.style.height=
+startH+(e.clientY-startY)+"px";
+
+});
+
+window.addEventListener("mouseup",()=>{
+resizing=false;
+});
+
+}
+
+const closeBtn=win.querySelector(".close-btn");
+const maxBtn=win.querySelector(".max-btn");
+const minBtn=win.querySelector(".min-btn");
+
+if(closeBtn){
+
+closeBtn.onclick=()=>{
+
+task.remove();
+win.remove();
+
+saveState();
+
+};
+
+}
+
+if(maxBtn){
+
+maxBtn.onclick=()=>{
+
+win.classList.toggle("maximized");
+
+};
+
+}
+
+if(minBtn){
+
+minBtn.onclick=()=>{
+
+win.style.display="none";
+
+task.classList.add("minimized");
+
+};
+
+}
+
+saveState();
+
+return win;
+
+}
+
+function openTestWindow(){
+
+createWindow({
+title:"テストウィンドウ",
+icon:"🪟",
+content:"<h1>Wincon テスト版</h1>"
+});
+
+}
+
+function openTestPopup(){
+
+createWindow({
+title:"Popup",
+icon:"⚠️",
+popup:true,
+content:`
+
+<h2>これはテストです</h2>
+
+<br>
+
+<button class='action'>はい</button>
+
+<br><br>
+
+<button class='action'>いいえ</button>
+
+`
+});
+
+}
+
+function openSecurityOptions(){
+
+createWindow({
+title:"セキュリティオプション",
+icon:"🛡️",
+popup:true,
+content:`
+
+<button class='action'
+onclick='shutdownSystem()'>
+電源OFF
+</button>
+
+<br><br>
+
+<button class='action'
+onclick='restartSystem()'>
+再起動
+</button>
+
+<br><br>
+
+<button class='action'
+onclick='openTaskManager()'>
+タスクマネージャ
+</button>
+
+<br><br>
+
+<button class='action'
+onclick='openRecovery()'>
+リカバリ
+</button>
+
+`
+});
+
+}
+
+function openTaskManager(){
+
+createWindow({
+title:"タスクマネージャ",
+icon:"📊",
+width:850,
+height:600,
+content:`<h1>Task Manager</h1><br><div id='taskList'></div>`
+});
+
+setTimeout(()=>{
+
+const list=document.getElementById("taskList");
+
+function render(){
+
+list.innerHTML="";
+
+document.querySelectorAll(".window")
+.forEach(win=>{
+
+const div=document.createElement("div");
+
+div.className="setting-group";
+
+div.innerHTML=`
+
+<b>${win.dataset.title}</b>
+
+<br><br>
+
+CPU: ${Math.floor(Math.random()*70)}%
+
+<br>
+
+RAM: ${Math.floor(Math.random()*1300)}MB
+
+<br><br>
+
+<button class='action'>
+強制終了
+</button>
+
+`;
+
+div.querySelector("button")
+.onclick=()=>{
+
+const title=win.dataset.title;
+
+document.querySelectorAll(".task-icon")
+.forEach(icon=>{
+
+if(icon.title===title){
+icon.remove();
+}
+
+});
+
+win.remove();
+
+render();
+
+saveState();
+
+};
+
+list.appendChild(div);
+
+});
+
+}
+
+render();
+
+setInterval(render,2000);
+
+},100);
+
+}
+
+function openFileManager(){
+
+createWindow({
+title:"ファイル",
+icon:"📁",
+width:900,
+height:650,
+content:`
+
+<h1>Files</h1>
+
+<br>
+
+<div class='setting-group'>
+
+使用容量:
+${Math.floor(
+JSON.stringify(localStorage).length/1024
+)} KB
+
+</div>
+
+<div class='setting-group'>
+
+<button class='action'
+onclick='runFirstAid()'>
+First Aid
+</button>
+
+</div>
+
+<div class='setting-group'>
+
+<h2>Installed Apps</h2>
+
+<div id='installedApps'></div>
+
+</div>
+
+`
+});
+
+setTimeout(()=>{
+
+const installed=
+document.getElementById("installedApps");
+
+menuItems.forEach(app=>{
+
+const div=document.createElement("div");
+
+div.className="setting-group";
+
+let badge="";
+
+if(app.system){
+badge="<div class='badge'>システムアプリ</div>";
+}
+
+if(app.enterprise){
+badge="<div class='badge'>企業固定アプリ</div>";
+}
+
+div.innerHTML=`
+
+<b>${app.icon} ${app.title}</b>
+
+${badge}
+
+<br><br>
+
+<button class='action deleteBtn'>
+削除
+</button>
+
+`;
+
+const btn=div.querySelector(".deleteBtn");
+
+if(app.system||app.enterprise){
+
+btn.disabled=true;
+btn.style.opacity=".5";
+
+btn.innerText=
+app.system
+?"システムアプリ"
+:"企業固定アプリ";
+
+}else{
+
+btn.onclick=()=>{
+
+menuItems=menuItems.filter(
+m=>m.title!==app.title
+);
+
+localStorage.setItem(
+"winconMenuItems",
+JSON.stringify(menuItems)
+);
+
+renderMenu();
+
+div.remove();
+
+};
+
+}
+
+installed.appendChild(div);
+
+});
+
+},100);
+
+}
+
+function runFirstAid(){
+alert("修復完了");
+}
+function openTransferApp(){
+
+createWindow({
+title:"お引越し",
+icon:"📦",
+width:700,
+height:500,
+content:`
+
+<h1>データお引越し</h1>
+
+<br>
+
+<button class="action"
+onclick="startTransferSource()">
+お引越し元
+</button>
+
+<br><br>
+
+<button class="action"
+onclick="startTransferTarget()">
+お引越し先
+</button>
+
+`
+});
+
+}
+function openTerminal(){
+
+createWindow({
+title:"ターミナル",
+icon:"⌨️",
+width:900,
+height:600,
+content:`
+
+<div id="terminalOutput"
+style="
+height:90%;
+overflow:auto;
+font-family:monospace;
+white-space:pre-wrap;
+"></div>
+
+<input
+id="terminalInput"
+placeholder="command"
+style="margin-top:10px;"
+>
+
+`
+});
+
+setTimeout(()=>{
+
+const output=
+document.getElementById("terminalOutput");
+
+const input=
+document.getElementById("terminalInput");
+
+print(
+"Wincon Terminal\nhelp でコマンド一覧"
+);
+
+function print(text){
+
+output.innerHTML+=text+"\n";
+
+output.scrollTop=
+output.scrollHeight;
+
+}
+
+input.addEventListener(
+"keydown",
+e=>{
+
+if(e.key!=="Enter")
+return;
+
+const cmd=input.value.trim();
+
+executeCommand(
+cmd,
+print
+);
+
+input.value="";
+
+});
+
+},100);
+
+}
+function executeCommand(
+cmd,
+print
+){
+
+const args=
+cmd.split(" ");
+
+switch(args[0]){
+
+case "help":
+
+print(`
+help
+systemscan
+factreset
+openapp [name]
+aboutapp [name]
+listapps
+listapps gui
+`);
+
+break;
+
+case "systemscan":
+
+print(
+"システム整合性チェック中..."
+);
+
+setTimeout(()=>{
+
+print(
+"問題は見つかりませんでした"
+);
+
+},1000);
+
+break;
+
+case "factreset":
+
+print(
+"完全リセット実行"
+);
+
+setTimeout(()=>{
+
+fullFactoryReset();
+
+},1000);
+
+break;
+
+case "openapp":
+
+openAppCommand(
+args,
+print
+);
+
+break;
+
+case "aboutapp":
+
+aboutAppCommand(
+args,
+print
+);
+
+break;
+case "listapps":
+
+if(args[1]==="gui"){
+
+  listAppsGUI();
+
+}else{
+
+  listAppsCommand(print);
+
+}
+
+break;
+default:
+
+print(
+"不明なコマンド"
+);
+
+}
+}
+function openAppCommand(
+args,
+print
+){
+
+const name=
+args
+.slice(1)
+.filter(a=>!a.startsWith("type="))
+.join(" ");
+
+const typeArg=
+args.find(
+a=>a.startsWith("type=")
+);
+
+const app=
+menuItems.find(
+m=>m.title===name
+);
+
+if(!app){
+
+print(
+"アプリが見つかりません"
+);
+
+return;
+
+}
+
+if(typeArg){
+
+app={
+...app,
+popup:
+typeArg==="type=popup"
+};
+
+}
+
+if(app.type==="file")
+openFileManager();
+
+else if(app.type==="task")
+openTaskManager();
+
+else if(app.type==="settings")
+openSystemSettings(false);
+
+else if(app.type==="terminal")
+openTerminal();
+else if(app.type==="coreservice")
+openCoreService();
+else if(app.type==="externalHTML")
+openExternalHTML(app);
+
+print(
+`${app.title} を起動`
+);
+
+}
+function aboutAppCommand(
+args,
+print
+){
+
+const name=args.slice(1).join(" ");
+
+const app=
+menuItems.find(
+m=>m.title===name
+);
+
+if(!app){
+
+print(
+"アプリが見つかりません"
+);
+
+return;
+
+}
+
+createWindow({
+title:`About ${app.title}`,
+icon:app.icon,
+width:500,
+height:400,
+content:`
+
+<h2>${app.icon} ${app.title}</h2>
+
+<br>
+
+<div class="setting-group">
+
+<b>タイプ</b><br>
+${app.type}
+
+</div>
+
+<div class="setting-group">
+
+<b>システムアプリ</b><br>
+${app.system?"はい":"いいえ"}
+
+</div>
+
+<div class="setting-group">
+
+<b>企業固定アプリ</b><br>
+${app.enterprise?"はい":"いいえ"}
+
+</div>
+
+<div class="setting-group">
+
+<b>Popup</b><br>
+${app.popup?"はい":"いいえ"}
+
+</div>
+
+`
+
+});
+
+}
+function listAppsCommand(print){
+
+print("=== Installed Apps ===");
+
+menuItems.forEach(app=>{
+
+let flags=[];
+
+if(app.system){
+flags.push("SYSTEM");
+}
+
+if(app.enterprise){
+flags.push("ENTERPRISE");
+}
+
+print(
+`${app.icon} ${app.title} [${flags.join(", ") || "USER"}]`
+);
+
+});
+
+}
+function listAppsGUI(){
+
+createWindow({
+title:"アプリ一覧",
+icon:"📦",
+width:800,
+height:600,
+content:`
+<h1>Installed Apps</h1>
+<br>
+<div id="appList"></div>
+`
+});
+
+setTimeout(()=>{
+
+const appList=
+document.getElementById("appList");
+
+menuItems.forEach(app=>{
+
+const div=
+document.createElement("div");
+
+div.className="setting-group";
+
+let badge="";
+
+if(app.system){
+badge+="<div class='badge'>SYSTEM</div>";
+}
+
+if(app.enterprise){
+badge+="<div class='badge'>ENTERPRISE</div>";
+}
+
+div.innerHTML=`
+
+<h3>${app.icon} ${app.title}</h3>
+
+${badge}
+
+<br><br>
+
+<button class="action">
+詳細
+</button>
+
+`;
+
+div.querySelector("button")
+.onclick=()=>{
+
+showAppInfo(app);
+
+};
+
+appList.appendChild(div);
+
+});
+
+},100);
+
+}
+function showAppInfo(app){
+
+createWindow({
+title:`${app.title} の詳細`,
+icon:app.icon,
+width:500,
+height:400,
+content:`
+
+<h2>${app.icon} ${app.title}</h2>
+
+<br>
+
+<p><b>Type:</b> ${app.type}</p>
+
+<p><b>System:</b>
+${app.system?"Yes":"No"}</p>
+
+<p><b>Enterprise:</b>
+${app.enterprise?"Yes":"No"}</p>
+
+<p><b>Popup:</b>
+${app.popup?"Yes":"No"}</p>
+
+`
+});
+
+}
+function openCoreService(){
+
+createWindow({
+title:"Wincon Core Service",
+icon:"⚙️",
+width:900,
+height:650,
+content:`
+
+<h1>Wincon Enterprise 2.0</h1>
+
+<div class="badge">
+SYSTEM PROCESS
+</div>
+
+<br>
+
+<div class="setting-group">
+
+<h2>System Information</h2>
+
+<b>Product Name</b>
+<br>
+Wincon Enterprise 2.0
+
+<br><br>
+
+<b>Version</b>
+<br>
+Beta 2.0
+
+<br><br>
+
+<b>Core Service Version</b>
+<br>
+1.3
+
+<br><br>
+
+<b>Status</b>
+<br>
+Running
+
+</div>
+
+<div class="setting-group">
+
+<h2>Applications</h2>
+
+<b>Loaded Apps</b>
+<br>
+${menuItems.length}
+
+<br><br>
+
+<b>Enterprise Apps</b>
+<br>
+${window.__WINCON_ENTERPRISE_APPS__.length}
+
+</div>
+
+<div class="setting-group">
+
+<h2>Storage</h2>
+
+<b>Local Storage Usage</b>
+<br>
+${Math.floor(
+JSON.stringify(localStorage).length/1024
+)} KB
+
+</div>
+
+<div class="setting-group">
+
+<h2>Services</h2>
+
+✅ Window Manager
+<br>
+
+✅ Terminal Service
+<br>
+
+✅ Transfer Service
+<br>
+
+✅ Enterprise Manager
+<br>
+
+✅ Storage Manager
+<br>
+
+✅ Menu Registry
+
+</div>
+
+<div class="setting-group">
+
+<h2>Build Information</h2>
+
+Build: 2026.06
+<br>
+
+Channel: Beta
+<br>
+
+Platform: Web
+
+</div>
+
+`
+});
+
+}
+function openRecovery(){
+
+document.getElementById("taskbar")
+.style.display="none";
+
+desktop.innerHTML=`
+
+<div id='bootScreen'>
+
+<div class='spinner'></div>
+
+<h1>Recovery</h1>
+
+<br>
+
+<button class='action'
+onclick='resetSystem()'>
+すべて初期化
+</button>
+
+</div>
+
+`;
+
+}
+function fullFactoryReset(){
+
+localStorage.clear();
+
+location.reload();
+
+}
+function resetSystem(){
+
+const enterpriseBackup=
+localStorage.getItem(
+ENTERPRISE_STORAGE_KEY
+);
+
+localStorage.clear();
+
+if(enterpriseBackup){
+
+localStorage.setItem(
+ENTERPRISE_STORAGE_KEY,
+enterpriseBackup
+);
+
+}
+
+location.reload();
+
+}
+
+function shutdownSystem(){
+
+saveEnterpriseApps();
+
+document.body.innerHTML=`
+
+<div id='bootScreen'>
+
+<div class='spinner'></div>
+
+<h1>シャットダウン中...</h1>
+
+</div>
+
+`;
+
+setTimeout(()=>{
+
+window.close();
+
+},2000);
+
+}
+
+function restartSystem(){
+
+saveEnterpriseApps();
+
+document.body.innerHTML=`
+
+<div id='bootScreen'>
+
+<div class='spinner'></div>
+
+<h1>再起動中...</h1>
+
+</div>
+
+`;
+
+setTimeout(()=>{
+
+location.reload();
+
+},2000);
+
+}
+
+function openSystemSettings(safe){
+
+createWindow({
+title:"システム設定",
+icon:"⚙️",
+width:960,
+height:700,
+safe:safe,
+content:`
+
+<h1>Wincon Settings</h1>
+
+<br>
+
+<div class='setting-group'>
+
+<h2>HTML追加</h2>
+
+<input id='htmlTitle'
+placeholder='タイトル'>
+
+<input id='htmlIcon'
+placeholder='アイコン'>
+
+<input id='htmlURL'
+placeholder='URL / GitHub URL'>
+
+<select id='htmlType'>
+<option value='window'>Window</option>
+<option value='popup'>Popup</option>
+</select>
+
+<br><br>
+
+<button class='action'
+onclick='addExternalHTML()'>
+追加
+</button>
+
+</div>
+
+<div class='setting-group'>
+
+<h2>企業固定アプリ</h2>
+
+<input id='enterpriseTitle'
+placeholder='タイトル'>
+
+<input id='enterpriseIcon'
+placeholder='アイコン'>
+
+<input id='enterpriseURL'
+placeholder='URL'>
+
+<br><br>
+
+<button class='action'
+onclick='addEnterpriseApp()'>
+追加
+</button>
+
+</div>
+
+<div class='setting-group'>
+
+<h2>Export</h2>
+
+<textarea id='exportBox'></textarea>
+
+<br><br>
+
+<button class='action'
+onclick='exportFullHTML()'>
+dat書き出し
+</button>
+
+</div>
+
+`
+});
+
+}
+
+function normalizeGitHubPages(url){
+
+if(url.includes("github.com")){
+
+const parts=url
+.replace("https://github.com/","")
+.split("/");
+
+return `https://${parts[0]}.github.io/${parts[1]}/`;
+
+}
+
+return url;
+
+}
+
+function addExternalHTML(){
+
+const title=
+document.getElementById("htmlTitle").value;
+
+const icon=
+document.getElementById("htmlIcon").value||"🌐";
+
+const url=
+document.getElementById("htmlURL").value;
+
+const type=
+document.getElementById("htmlType").value;
+
+menuItems.push({
+title,
+icon,
+type:"externalHTML",
+source:url,
+popup:type==="popup"
+});
+
+localStorage.setItem(
+"winconMenuItems",
+JSON.stringify(menuItems)
+);
+
+renderMenu();
+
+}
+
+function addEnterpriseApp(){
+
+const title=
+document.getElementById("enterpriseTitle").value;
+
+const icon=
+document.getElementById("enterpriseIcon").value||"🌐";
+
+const url=
+document.getElementById("enterpriseURL").value;
+
+if(!title||!url)return;
+
+const app={
+title,
+icon,
+type:"externalHTML",
+source:url,
+enterprise:true
+};
+
+const exists=
+window.__WINCON_ENTERPRISE_APPS__
+.some(a=>
+a.title===title &&
+a.source===url
+);
+
+if(exists)return;
+
+window.__WINCON_ENTERPRISE_APPS__.push(app);
+
+saveEnterpriseApps();
+
+mergeEnterpriseApps();
+
+renderMenu();
+
+}
+
+function openExternalHTML(item){
+
+createWindow({
+title:item.title,
+icon:item.icon,
+width:1000,
+height:700,
+popup:item.popup,
+content:`
+<iframe src="${normalizeGitHubPages(item.source)}"></iframe>
+`
+});
+
+}
+let transferPeer=null;
+let transferChannel=null;
+function getAllStorage(){
+
+const data={};
+
+for(
+let i=0;
+i<localStorage.length;
+i++
+){
+
+const key=
+localStorage.key(i);
+
+data[key]=
+localStorage.getItem(key);
+
+}
+
+return data;
+
+}
+function showTransferScreen(text){
+
+document.body.innerHTML=`
+
+<div id="bootScreen">
+
+<div class="spinner"></div>
+
+<h1>${text}</h1>
+
+</div>
+
+`;
+
+}
+async function startTransferSource(){
+
+transferPeer=new RTCPeerConnection({
+iceServers:[
+{
+urls:"stun:stun.l.google.com:19302"
+}
+]
+})
+
+transferChannel=
+transferPeer.createDataChannel(
+"wincon-transfer"
+);
+
+showTransferScreen(
+"接続コード生成中..."
+);
+
+const offer=
+await transferPeer.createOffer();
+
+await transferPeer.setLocalDescription(
+offer
+);
+
+await new Promise(resolve=>{
+
+transferPeer.onicecandidate=e=>{
+
+if(!e.candidate){
+resolve();
+}
+
+};
+
+});
+
+const code=btoa(
+JSON.stringify(
+transferPeer.localDescription
+)
+);
+
+prompt(
+"このコードを新しい端末へ",
+code
+);
+
+transferChannel.onopen=()=>{
+
+showTransferScreen(
+"転送中..."
+);
+
+transferChannel.send(
+JSON.stringify(
+getAllStorage()
+)
+);
+
+};
+const answerCode=
+prompt(
+"新端末の応答コード"
+);
+
+if(answerCode){
+
+await transferPeer.setRemoteDescription(
+JSON.parse(
+atob(answerCode)
+)
+);
+
+}
+}
+async function startTransferTarget(){
+
+const offerCode=
+prompt(
+"接続コードを貼り付け"
+);
+
+if(!offerCode)return;
+
+
+transferPeer=
+new RTCPeerConnection({
+iceServers:[
+{
+urls:"stun:stun.l.google.com:19302"
+}
+]
+});
+
+await transferPeer.setRemoteDescription(
+JSON.parse(
+atob(offerCode)
+)
+);
+
+const answer=
+await transferPeer.createAnswer();
+
+await transferPeer.setLocalDescription(
+answer
+);
+
+await new Promise(resolve=>{
+
+transferPeer.onicecandidate=e=>{
+
+if(!e.candidate){
+resolve();
+}
+
+};
+
+});
+
+prompt(
+"この応答コードを旧端末へ",
+btoa(
+JSON.stringify(
+transferPeer.localDescription
+)
+)
+);
+
+transferPeer.ondatachannel=e=>{
+
+transferChannel=e.channel;
+
+transferChannel.onmessage=
+msg=>{
+
+const data=
+JSON.parse(msg.data);
+
+for(
+const key in data
+){
+
+localStorage.setItem(
+key,
+data[key]
+);
+
+}
+
+showTransferDone();
+
+};
+
+};
+
+}
+
+function showTransferDone(){
+
+document.body.innerHTML=`
+
+<div id="bootScreen">
+
+<h1>お引越し完了</h1>
+
+<br>
+
+<button
+class="action"
+onclick="location.reload()"
+>
+
+再起動
+
+</button>
+
+</div>
+
+`;
+
+}
+function saveState(){
+
+// 復元機能無効
+return;
+
+}
+
+function exportFullHTML() {
+  try {
+    // 状態取得（安全）
+    const state = {
+      version: "Wincon Enterprise 2.0",
+      timestamp: Date.now(),
+      menuItems: typeof menuItems !== "undefined" ? menuItems : [],
+      enterprise: window.__WINCON_ENTERPRISE_APPS__ || [],
+      firstBoot: false
+    };
+
+    const datFile = JSON.stringify(state, null, 2);
+
+    // boot.html
+    const bootHTML = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Wincon Boot</title>
+<style>
+body {
+  margin:0;
+  background:#0d0d0d;
+  color:#fff;
+  font-family:sans-serif;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
+}
+.box { text-align:center; width:320px; }
+.bar {
+  width:100%;
+  height:6px;
+  background:#333;
+  margin-top:20px;
+  overflow:hidden;
+  border-radius:3px;
+}
+.progress {
+  width:0%;
+  height:100%;
+  background:#4caf50;
+  animation: load 2s forwards;
+}
+@keyframes load { to { width:100%; } }
+</style>
+</head>
+<body>
+<div class="box">
+  <h2>Wincon Starting</h2>
+  <p>Checking system...</p>
+
+  <div class="bar"><div class="progress"></div></div>
+
+  <script>
+    setTimeout(() => {
+      location.href = "wincon.html";
+    }, 2000);
+  <\/script>
+</div>
+</body>
+</html>`;
+
+    // wincon.html
+    const winconHTML = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Wincon Enterprise</title>
+</head>
+<body>
+<script>
+let state = localStorage.getItem("wincon_state");
+
+if (!state) {
+  state = {
+    version: "Wincon fallback",
+    firstBoot: true
+  };
+  localStorage.setItem("wincon_state", JSON.stringify(state));
+}
+console.log("Wincon loaded");
+<\/script>
+
+<h1>このページの内容をhttps://ayatocraft.github.io/wincon のindex.htmlに変更してください。</h1>
+</body>
+</html>`;
+
+    // ダウンロード処理（ブラウザ対応）
+    const download = (filename, text) => {
+      const blob = new Blob([text], { type: "text/plain" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+    };
+
+    download("boot.html", bootHTML);
+    download("wincon.html", winconHTML);
+    download("wincon.dat", datFile);
+
+    alert("エクスポート完了");
+
+    return {
+      "boot.html": bootHTML,
+      "wincon.html": winconHTML,
+      "wincon.dat": datFile
+    };
+
+  } catch (e) {
+    console.error("exportFullHTML error:", e);
+    alert("エクスポート失敗: " + e.message);
+  }
+}
+
+
+function restoreState(){
+  // 復元なし
+}
+function startTutorial(){
+
+if(localStorage.getItem("tutorialDone"))
+return;
+
+const tutorial=document.createElement("div");
+
+tutorial.style.position="fixed";
+tutorial.style.inset="0";
+tutorial.style.background="#111";
+tutorial.style.zIndex="999999999";
+tutorial.style.display="flex";
+tutorial.style.alignItems="center";
+tutorial.style.justifyContent="center";
+
+tutorial.innerHTML=`
+
+<div style='
+width:520px;
+background:#2c313b;
+padding:24px;
+border-radius:16px;
+'>
+
+<h1>Wincon Tutorial</h1>
+
+<br>
+
+<p>
+Menuからアプリを開けます。
+ウィンドウは移動・最大化・最小化できます。
+Ctrl+Shiftでセキュリティオプションを開けます。
+</p>
+
+<br>
+
+<button class='action'
+id='tutorialStart'>
+開始
+</button>
+
+</div>
+
+`;
+
+document.body.appendChild(tutorial);
+
+document.getElementById("tutorialStart")
+.onclick=()=>{
+
+localStorage.setItem(
+"tutorialDone",
+"true"
+);
+
+tutorial.remove();
+
+};
+
+}
+
+window.addEventListener(
+"beforeunload",
+()=>{
+saveEnterpriseApps();
+}
+);
+</script>
+
+</body>
+</html>

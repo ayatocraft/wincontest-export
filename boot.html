@@ -2,51 +2,48 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Wincon Boot</title>
+<title>Boot</title>
 <style>
 body{
 margin:0;
-background:#0d0d0d;
+background:#111;
 color:white;
-font-family:sans-serif;
 display:flex;
-align-items:center;
 justify-content:center;
+align-items:center;
 height:100vh;
+flex-direction:column;
+font-family:Segoe UI;
 }
-.box{text-align:center}
 .bar{
-width:280px;
+width:260px;
 height:6px;
 background:#333;
 border-radius:3px;
 overflow:hidden;
-margin-top:16px;
+margin-top:10px;
 }
-.progress{
+.bar div{
 width:0%;
 height:100%;
 background:#4caf50;
-animation:load 2s forwards;
+animation:load 1.5s forwards;
 }
 @keyframes load{to{width:100%;}}
 </style>
 </head>
 <body>
 
-<div class="box">
 <h2>Wincon Boot</h2>
 <p>Loading...</p>
 
-<div class="bar"><div class="progress"></div></div>
+<div class="bar"><div></div></div>
 
 <script>
 setTimeout(()=>{
 location.href="index.html";
-},2000);
+},1500);
 </script>
-
-</div>
 
 </body>
 </html>

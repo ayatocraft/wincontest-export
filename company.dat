@@ -1,0 +1,87 @@
+{
+  "menuItems": [
+    {
+      "title": "Test",
+      "icon": "📝",
+      "type": "externalHTML",
+      "source": "https://ayatocraft.github.io/mynameis",
+      "enterprise": true
+    },
+    {
+      "title": "テストウィンドウ",
+      "icon": "🪟",
+      "type": "window"
+    },
+    {
+      "title": "テストポップアップ",
+      "icon": "⚠️",
+      "type": "popup"
+    },
+    {
+      "title": "ファイル",
+      "icon": "📁",
+      "type": "file",
+      "system": true
+    },
+    {
+      "title": "タスクマネージャ",
+      "icon": "📊",
+      "type": "task",
+      "system": true
+    },
+    {
+      "title": "システム設定",
+      "icon": "⚙️",
+      "type": "settings",
+      "system": true
+    },
+    {
+      "title": "リカバリ",
+      "icon": "🛠️",
+      "type": "recovery",
+      "system": true,
+      "hidden": true
+    },
+    {
+      "title": "電源を切る",
+      "icon": "⏻",
+      "type": "shutdown",
+      "system": true
+    },
+    {
+      "title": "お引越し",
+      "icon": "📦",
+      "type": "transfer",
+      "system": true
+    },
+    {
+      "title": "ターミナル",
+      "icon": "⌨️",
+      "type": "terminal",
+      "system": true
+    },
+    {
+      "title": "Wincon Core Service",
+      "icon": "⚙️",
+      "type": "coreservice",
+      "system": true,
+      "hidden": true
+    },
+    {
+      "title": "Testですよ",
+      "icon": "📝",
+      "type": "externalHTML",
+      "source": "https://ayatocraft.github.io/ichiran",
+      "popup": false
+    }
+  ],
+  "enterpriseApps": [
+    {
+      "title": "Test",
+      "icon": "📝",
+      "type": "externalHTML",
+      "source": "https://ayatocraft.github.io/mynameis",
+      "enterprise": true
+    }
+  ]
+}
